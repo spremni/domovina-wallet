@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'theme.dart';
-import 'nav.dart';
+import 'package:domovina_wallet/theme.dart';
+import 'package:domovina_wallet/nav.dart';
 
 /// Main entry point for the application
 ///
@@ -30,15 +30,12 @@ class MyApp extends StatelessWidget {
     //   ),
     // );
     return MaterialApp.router(
-      title: 'Dreamflow Starter',
+      title: 'DOMOVINA Wallet',
       debugShowCheckedModeBanner: false,
-
-      // Theme configuration
       theme: lightTheme,
       darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
-
-      // Router configuration
+      // Default to dark mode as requested
+      themeMode: ThemeMode.dark,
       routerConfig: AppRouter.router,
     );
   }

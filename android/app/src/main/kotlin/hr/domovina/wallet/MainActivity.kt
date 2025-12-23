@@ -1,4 +1,4 @@
-package com.mycompany.CounterApp
+package hr.domovina.wallet
 
 import io.flutter.embedding.android.FlutterActivity
 

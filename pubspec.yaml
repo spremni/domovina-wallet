@@ -1,5 +1,5 @@
 name: domovina_wallet
-description: "A new Flutter project."
+description: "DOMOVINA Wallet — self-custody Solana wallet for Croatian users"
 publish_to: "none"
 
 version: 1.0.0+1
@@ -23,9 +23,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/icons/dreamflow_icon.jpg
+  image_path: assets/images/Croatian_shield_checkerboard_minimal_logo_red__blue__white_1766532723985.png
   remove_alpha_ios: true
