@@ -1,0 +1,27 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "domovina-development",
+          "appId": "1:900764331858:android:2f5d27ea80b5a7aea7148b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "domovina-development",
+          "configurations": {
+            "android": "1:900764331858:android:2f5d27ea80b5a7aea7148b",
+            "ios": "1:900764331858:ios:1ab2c4cccc37df75a7148b",
+            "web": "1:900764331858:web:c04ba87c4a8ab454a7148b"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
