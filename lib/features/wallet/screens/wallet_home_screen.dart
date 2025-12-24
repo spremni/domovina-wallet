@@ -12,6 +12,7 @@ import 'package:domovina_wallet/services/secure_storage_service.dart';
 import 'package:domovina_wallet/services/solana_rpc_service.dart';
 import 'package:domovina_wallet/theme.dart';
 import 'package:domovina_wallet/widgets/app_button.dart';
+import 'package:domovina_wallet/widgets/balance_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -30,7 +31,6 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
   List<TransactionModel> _recentTxs = const [];
   bool _loading = true;
   bool _refreshing = false;
-  double _animatedSolUi = 0;
   late final SolanaRpcService _rpc;
 
   @override
@@ -99,16 +99,11 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
       if (!mounted) return;
       setState(() {
         _solBalance = sol;
-        _animatedSolUi = animatedFrom; // start value
         _tokens = splTokens.where((t) => !t.isNative).toList(growable: false);
         _recentTxs = parsedTxs.take(5).toList(growable: false);
       });
 
-      // Trigger animation to new value
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() => _animatedSolUi = animatedTo);
-      });
+      // BalanceCard animates internally on value change
     } catch (e) {
       debugPrint('WalletHome: refresh failed: $e');
       if (!mounted) return;
@@ -171,9 +166,13 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
-            _BalanceCard(
-              solBalance: _solBalance,
-              animatedFrom: _animatedSolUi,
+            BalanceCard(
+              balance: _solBalance?.balance ?? BigInt.zero,
+              symbol: 'SOL',
+              fiatValue: null,
+              fiatCurrency: 'EUR',
+              isLoading: _solBalance == null,
+              onRefresh: _refreshAll,
             ),
             const SizedBox(height: 16),
             _ActionRow(onSend: _openSend, onReceive: _openReceive, onPay: _openPay, onScan: _openScanner),
@@ -217,51 +216,7 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
   }
 }
 
-class _BalanceCard extends StatelessWidget {
-  final TokenBalance? solBalance;
-  final double animatedFrom;
-  const _BalanceCard({required this.solBalance, required this.animatedFrom});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    final target = solBalance?.uiAmount ?? 0;
-    return Card(
-      color: cs.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          gradient: LinearGradient(
-            colors: [cs.primary.withValues(alpha: 0.1), cs.secondary.withValues(alpha: 0.08)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Text('Ukupno stanje', style: text.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
-          const SizedBox(height: 8),
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: animatedFrom, end: target),
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return Text(
-                Formatters.formatSol(value, decimals: 4),
-                style: text.headlineLarge?.copyWith(color: cs.onSurface),
-                textAlign: TextAlign.center,
-              );
-            },
-          ),
-          const SizedBox(height: 6),
-          Text('≈ € —', style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-        ]),
-      ),
-    );
-  }
-}
+// Extracted BalanceCard moved to package:domovina_wallet/widgets/balance_card.dart
 
 class _ActionRow extends StatelessWidget {
   final VoidCallback onSend;
