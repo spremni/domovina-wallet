@@ -154,6 +154,17 @@ class SecureStorageService {
     }
   }
 
+  /// Deletes a stored mnemonic for the given wallet, if present.
+  Future<void> deleteMnemonic({required String walletId}) async {
+    assert(walletId.isNotEmpty, 'walletId must not be empty');
+    try {
+      await _storage.delete(key: _mnemonicKey(walletId));
+    } catch (e) {
+      debugPrint('SecureStorageService.deleteMnemonic error: $e');
+      rethrow;
+    }
+  }
+
   // =====================
   // Public API — Wallet metadata
   // =====================
