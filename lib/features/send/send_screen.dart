@@ -10,6 +10,7 @@ import 'package:domovina_wallet/nav.dart';
 import 'package:domovina_wallet/services/secure_storage_service.dart';
 import 'package:domovina_wallet/services/solana_rpc_service.dart';
 import 'package:domovina_wallet/widgets/app_button.dart';
+import 'package:domovina_wallet/features/send/widgets/confirm_transaction_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -253,33 +254,18 @@ class _SendScreenState extends State<SendScreen> {
     final tok = _selected;
     if (tok == null) return;
     final addr = _addressCtrl.text.trim();
-    final uiAmount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
-    final feeSol = _feeLamports.toDouble() / Formatters.lamportsPerSol;
+    final baseAmount = _parseUiToBase(_amountCtrl.text.replaceAll(',', '.'), tok.decimals);
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      builder: (ctx) {
-        final cs = Theme.of(ctx).colorScheme;
-        final text = Theme.of(ctx).textTheme;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Container(width: 48, height: 4, decoration: BoxDecoration(color: cs.outline.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 12),
-              Text('Pregled', style: text.titleMedium?.copyWith(color: cs.onSurface)),
-              const SizedBox(height: 12),
-              _ReviewRow(label: 'Prima', value: Formatters.shortAddress(addr)),
-              _ReviewRow(label: 'Token', value: tok.symbol.isEmpty ? (tok.isNative ? 'SOL' : 'Token') : tok.symbol),
-              _ReviewRow(label: 'Iznos', value: '${_formatUi(uiAmount, decimals: tok.decimals)} ${tok.symbol.isEmpty ? '' : tok.symbol}'),
-              _ReviewRow(label: 'Naknada', value: '~${feeSol.toStringAsFixed(6)} SOL'),
-              const SizedBox(height: 16),
-              AppButton(label: 'Potvrdi (uskoro)', icon: Icons.send, onPressed: null),
-            ]),
-          ),
-        );
-      },
+      builder: (ctx) => ConfirmTransactionSheet(
+        wallet: _wallet!,
+        token: tok,
+        recipientAddress: addr,
+        amountBase: baseAmount,
+        feeLamports: _feeLamports,
+      ),
     );
   }
 
