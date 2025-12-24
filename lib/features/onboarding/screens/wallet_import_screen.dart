@@ -206,8 +206,8 @@ class _WalletImportScreenState extends State<WalletImportScreen> with SingleTick
     });
 
     if (!mounted) return;
-    // Navigate to main wallet/home
-    context.go(AppRoutes.home);
+    // Navigate to biometric setup screen
+    context.go(AppRoutes.onboardingBiometrics);
   }
 
   Future<(String, bool)?> _askNameAndBiometrics({required String initial}) async {

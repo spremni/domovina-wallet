@@ -51,6 +51,7 @@ class SecureStorageService {
   // Keys
   static const String _masterKeyKey = 'mk_v1';
   static const String _walletListKey = 'wallet_list_v1';
+  static const String _biometricsEnabledKey = 'biometrics_enabled_v1';
 
   // Versioning for ciphertext payloads
   static const int _encVersion = 1; // v1: AES‑GCM; payload fields: v,a,n,c,t
@@ -183,6 +184,33 @@ class SecureStorageService {
     } catch (e) {
       debugPrint('SecureStorageService.getWalletList error: $e');
       return const [];
+    }
+  }
+
+  // =====================
+  // Public API — Biometrics preference
+  // =====================
+
+  /// Stores the user's preference for enabling biometric authentication.
+  /// This is a global app-level setting (not per-wallet).
+  Future<void> setBiometricsEnabled(bool enabled) async {
+    try {
+      await _storage.write(key: _biometricsEnabledKey, value: enabled ? '1' : '0');
+    } catch (e) {
+      debugPrint('SecureStorageService.setBiometricsEnabled error: $e');
+      rethrow;
+    }
+  }
+
+  /// Returns whether biometric authentication is enabled.
+  /// Defaults to false if not set.
+  Future<bool> getBiometricsEnabled() async {
+    try {
+      final v = await _storage.read(key: _biometricsEnabledKey);
+      return v == '1';
+    } catch (e) {
+      debugPrint('SecureStorageService.getBiometricsEnabled error: $e');
+      return false;
     }
   }
 

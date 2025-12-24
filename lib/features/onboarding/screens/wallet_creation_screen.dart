@@ -136,7 +136,7 @@ class _WalletCreationScreenState extends State<WalletCreationScreen> with Ticker
       await SecureStorageService.instance.saveWalletList(updated);
 
       if (!mounted) return;
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.onboardingBiometrics);
     } catch (e) {
       debugPrint('Wallet setup failed: $e');
       if (!mounted) return;
