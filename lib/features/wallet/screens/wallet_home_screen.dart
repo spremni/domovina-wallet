@@ -97,6 +97,31 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
       final parsedTxs = txs.whereType<TransactionModel>().toList()
         ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
+      // Merge watched tokens (tracked by user) that may not have on-chain accounts yet
+      try {
+        final wallets = await SecureStorageService.instance.getWalletList();
+        final active = wallets.firstWhere((w) => w.id == _activeWallet?.id, orElse: () => wallets.first);
+        final watched = await SecureStorageService.instance.getWatchedTokens(walletId: active.id);
+        final existingMints = splTokens.where((t) => t.mint != null).map((t) => t.mint!.toLowerCase()).toSet();
+        for (final w in watched) {
+          final mint = (w['mint'] as String?)?.toLowerCase();
+          if (mint == null || existingMints.contains(mint)) continue;
+          final decimals = (w['decimals'] as num?)?.toInt() ?? (TokenRegistry.decimalsForMint(mint) ?? 0);
+          final info = TokenRegistry.byMint(mint);
+          splTokens.add(TokenBalance(
+            mint: mint,
+            symbol: info?.symbol ?? '',
+            name: info?.symbol ?? 'Token',
+            balance: BigInt.zero,
+            decimals: decimals,
+            iconUrl: null,
+            isNative: false,
+          ));
+        }
+      } catch (e) {
+        debugPrint('WalletHome: merge watched tokens failed: $e');
+      }
+
       if (!mounted) return;
       setState(() {
         _solBalance = sol;
@@ -178,7 +203,17 @@ class _WalletHomeScreenState extends State<WalletHomeScreen> {
             const SizedBox(height: 16),
             _ActionRow(onSend: _openSend, onReceive: _openReceive, onPay: _openPay, onScan: _openScanner),
             const SizedBox(height: 12),
-            _SectionHeader(title: 'Tokeni'),
+            _SectionHeader(
+              title: 'Tokeni',
+              action: TextButton(
+                onPressed: () async {
+                  await context.push(AppRoutes.addToken);
+                  // Refresh after returning from Add Token screen
+                  await _refreshAll();
+                },
+                child: Text('Dodaj token', style: text.labelLarge?.copyWith(color: cs.primary)),
+              ),
+            ),
             const SizedBox(height: 8),
             if (_tokens.isEmpty)
               _EmptyState(label: 'Nema pronađenih tokena')

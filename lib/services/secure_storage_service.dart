@@ -52,6 +52,7 @@ class SecureStorageService {
   static const String _masterKeyKey = 'mk_v1';
   static const String _walletListKey = 'wallet_list_v1';
   static const String _biometricsEnabledKey = 'biometrics_enabled_v1';
+  static String _watchedTokensKey(String walletId) => 'watched_tokens_$walletId';
 
   // Versioning for ciphertext payloads
   static const int _encVersion = 1; // v1: AES‑GCM; payload fields: v,a,n,c,t
@@ -178,6 +179,55 @@ class SecureStorageService {
       debugPrint('SecureStorageService.saveWalletList error: $e');
       rethrow;
     }
+  }
+
+  // =====================
+  // Public API — Watched tokens per wallet
+  // =====================
+
+  /// Persist a list of watched tokens for a wallet. Each item is a Map with at least
+  /// {mint: String, decimals: int}. Optional fields: symbol, name.
+  Future<void> setWatchedTokens({required String walletId, required List<Map<String, dynamic>> tokens}) async {
+    assert(walletId.isNotEmpty, 'walletId must not be empty');
+    try {
+      final jsonStr = jsonEncode(tokens);
+      await _storage.write(key: _watchedTokensKey(walletId), value: jsonStr);
+    } catch (e) {
+      debugPrint('SecureStorageService.setWatchedTokens error: $e');
+      rethrow;
+    }
+  }
+
+  /// Returns the list of watched tokens for a wallet. Empty list if none.
+  Future<List<Map<String, dynamic>>> getWatchedTokens({required String walletId}) async {
+    assert(walletId.isNotEmpty, 'walletId must not be empty');
+    try {
+      final jsonStr = await _storage.read(key: _watchedTokensKey(walletId));
+      if (jsonStr == null || jsonStr.isEmpty) return const [];
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is List) {
+        return decoded.whereType<Map>().map((e) => (e as Map).cast<String, dynamic>()).toList(growable: false);
+      }
+      return const [];
+    } catch (e) {
+      debugPrint('SecureStorageService.getWatchedTokens error: $e');
+      return const [];
+    }
+  }
+
+  /// Adds or updates a watched token entry by mint.
+  Future<void> upsertWatchedToken({required String walletId, required Map<String, dynamic> token}) async {
+    final list = await getWatchedTokens(walletId: walletId);
+    final mint = (token['mint'] as String?)?.toLowerCase();
+    if (mint == null || mint.isEmpty) return;
+    final updated = [...list];
+    final idx = updated.indexWhere((e) => (e['mint'] as String?)?.toLowerCase() == mint);
+    if (idx >= 0) {
+      updated[idx] = {...updated[idx], ...token};
+    } else {
+      updated.add(token);
+    }
+    await setWatchedTokens(walletId: walletId, tokens: updated);
   }
 
   Future<List<WalletModel>> getWalletList() async {

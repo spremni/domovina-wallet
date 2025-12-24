@@ -170,6 +170,64 @@ class SolanaRpcService {
     ];
   }
 
+  /// Returns parsed mint info for a given SPL mint address using getAccountInfo.
+  /// If the account does not exist or is not a mint, returns null.
+  Future<MintInfo?> getMintInfo(String mint) async {
+    final result = await _rpcCall<Map<String, dynamic>?>(
+      method: 'getAccountInfo',
+      params: [
+        mint,
+        {
+          'encoding': 'jsonParsed',
+          'commitment': SolanaConstants.defaultCommitment,
+        },
+      ],
+      transform: (json) => json,
+      allowNull: true,
+    );
+    if (result == null) return null;
+    try {
+      final value = result['value'] as Map<String, dynamic>?;
+      if (value == null) return null;
+      final data = value['data'] as Map<String, dynamic>?;
+      final parsed = data?['parsed'] as Map<String, dynamic>?;
+      final type = parsed?['type']?.toString();
+      if (type != 'mint') return null;
+      final info = parsed?['info'] as Map<String, dynamic>?;
+      final decimals = (info?['decimals'] as num?)?.toInt();
+      final supplyStr = info?['supply']?.toString();
+      final isInitialized = info?['isInitialized'] == true || info?['isInitialized']?.toString() == 'true';
+      if (decimals == null) return null;
+      return MintInfo(mint: mint, decimals: decimals, isInitialized: isInitialized, supply: supplyStr);
+    } catch (e) {
+      debugPrint('SolanaRpcService.getMintInfo parse error: $e');
+      return null;
+    }
+  }
+
+  /// Returns token accounts for a given owner filtered by a specific mint.
+  /// Useful to check if the associated token account exists.
+  Future<List<Map<String, dynamic>>> getOwnerTokenAccountsForMint(String owner, String mint) async {
+    final list = await _rpcCall<List<dynamic>>(
+      method: 'getTokenAccountsByOwner',
+      params: [
+        owner,
+        {
+          'mint': mint,
+        },
+        {
+          'encoding': 'jsonParsed',
+          'commitment': SolanaConstants.defaultCommitment,
+        },
+      ],
+      transform: (json) => (json['value'] as List?) ?? const [],
+    );
+    return [
+      for (final item in list)
+        if (item is Map<String, dynamic>) item,
+    ];
+  }
+
   /// Dispose the underlying HTTP client if you created this service.
   void close() => _client.close();
 
@@ -258,6 +316,15 @@ class SolanaRpcService {
     }
     return false;
   }
+}
+
+/// Minimal parsed SPL mint metadata from getAccountInfo.
+class MintInfo {
+  final String mint;
+  final int decimals;
+  final bool isInitialized;
+  final String? supply;
+  const MintInfo({required this.mint, required this.decimals, required this.isInitialized, this.supply});
 }
 
 /// Represents a structured JSON-RPC error returned by Solana.
