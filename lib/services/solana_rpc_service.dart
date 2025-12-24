@@ -152,13 +152,14 @@ class SolanaRpcService {
   }
 
   /// Get recent transaction signatures for an address.
-  Future<List<String>> getSignaturesForAddress(String address, {int limit = 20}) async {
+  Future<List<String>> getSignaturesForAddress(String address, {int limit = 20, String? before}) async {
     final list = await _rpcCall<List<dynamic>>(
       method: 'getSignaturesForAddress',
       params: [
         address,
         {
           'limit': limit,
+          if (before != null && before.isNotEmpty) 'before': before,
         }
       ],
       transform: (json) => (json as List?) ?? const [],

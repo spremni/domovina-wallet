@@ -12,6 +12,7 @@ import 'package:domovina_wallet/features/onboarding/screens/wallet_import_screen
 import 'package:domovina_wallet/features/onboarding/screens/biometric_setup_screen.dart';
 import 'package:domovina_wallet/features/wallet/screens/wallet_home_screen.dart';
 import 'package:domovina_wallet/features/wallet/screens/qr_scanner_screen.dart';
+import 'package:domovina_wallet/features/wallet/screens/token_detail_screen.dart';
 
 /// GoRouter configuration for app navigation
 ///
@@ -73,6 +74,14 @@ class AppRouter {
         pageBuilder: (context, state) => const NoTransitionPage(child: HistoryScreen()),
       ),
       GoRoute(
+        path: AppRoutes.tokenDetail,
+        name: 'token_detail',
+        pageBuilder: (context, state) {
+          final args = state.extra is TokenDetailArgs ? state.extra as TokenDetailArgs : null;
+          return NoTransitionPage(child: TokenDetailScreen(args: args));
+        },
+      ),
+      GoRoute(
         path: AppRoutes.onboarding,
         name: 'onboarding',
         pageBuilder: (context, state) => const NoTransitionPage(
@@ -119,4 +128,5 @@ class AppRoutes {
   static const String scan = '/scan';
   static const String settings = '/settings';
   static const String history = '/history';
+  static const String tokenDetail = '/token';
 }

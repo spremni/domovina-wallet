@@ -11,6 +11,7 @@ import 'package:domovina_wallet/nav.dart';
 import 'package:domovina_wallet/services/secure_storage_service.dart';
 import 'package:domovina_wallet/services/solana_rpc_service.dart';
 import 'package:domovina_wallet/theme.dart';
+import 'package:domovina_wallet/features/wallet/screens/token_detail_screen.dart';
 import 'package:domovina_wallet/widgets/app_button.dart';
 import 'package:domovina_wallet/widgets/balance_card.dart';
 import 'package:flutter/material.dart';
@@ -302,7 +303,7 @@ class _TokenListItem extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return InkWell(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Detalji tokena: ${token.symbol}')));
+        context.push(AppRoutes.tokenDetail, extra: TokenDetailArgs(token: token));
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
