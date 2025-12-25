@@ -2,6 +2,7 @@ import 'package:domovina_wallet/features/history/screens/history_screen.dart';
 import 'package:domovina_wallet/features/pay/pay_screen.dart';
 import 'package:domovina_wallet/features/receive/receive_screen.dart';
 import 'package:domovina_wallet/features/send/send_screen.dart';
+import 'package:domovina_wallet/features/send/screens/transaction_result_screen.dart';
 import 'package:domovina_wallet/features/settings/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -48,6 +49,14 @@ class AppRouter {
         path: AppRoutes.send,
         name: 'send',
         pageBuilder: (context, state) => const NoTransitionPage(child: SendScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.txResult,
+        name: 'tx_result',
+        pageBuilder: (context, state) {
+          final args = state.extra is TransactionResultArgs ? state.extra as TransactionResultArgs : null;
+          return NoTransitionPage(child: TransactionResultScreen(args: args));
+        },
       ),
       GoRoute(
         path: AppRoutes.receive,
@@ -136,4 +145,5 @@ class AppRoutes {
   static const String history = '/history';
   static const String tokenDetail = '/token';
   static const String addToken = '/add-token';
+  static const String txResult = '/tx-result';
 }

@@ -13,6 +13,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:domovina_wallet/nav.dart';
+import 'package:domovina_wallet/features/send/screens/transaction_result_screen.dart';
 
 class ConfirmTransactionSheet extends StatefulWidget {
   final WalletModel wallet;
@@ -129,14 +131,29 @@ class _ConfirmTransactionSheetState extends State<ConfirmTransactionSheet> {
       final signature = await _rpc.sendTransaction(signedBase64);
 
       if (!mounted) return;
-      // Close sheet and navigate to History; show success
+      // Close sheet and navigate to Transaction Result (success)
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transakcija poslana: ${Formatters.shortAddress(signature)}')));
-      context.go('/history');
+      final args = TransactionResultArgs(
+        success: true,
+        recipientAddress: widget.recipientAddress,
+        amountBase: widget.amountBase,
+        token: widget.token,
+        signature: signature,
+      );
+      context.push(AppRoutes.txResult, extra: args);
     } catch (e) {
       debugPrint('Submit tx failed: $e');
       if (!mounted) return;
-      setState(() => _error = 'Neuspješno slanje: $e');
+      // Close sheet and navigate to Transaction Result (failure)
+      Navigator.of(context).pop();
+      final args = TransactionResultArgs(
+        success: false,
+        recipientAddress: widget.recipientAddress,
+        amountBase: widget.amountBase,
+        token: widget.token,
+        rawError: e.toString(),
+      );
+      context.push(AppRoutes.txResult, extra: args);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
