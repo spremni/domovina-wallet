@@ -16,8 +16,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+class SendScreenArgs {
+  const SendScreenArgs({this.recipient});
+  final String? recipient;
+}
+
 class SendScreen extends StatefulWidget {
-  const SendScreen({super.key});
+  const SendScreen({super.key, this.args});
+  final SendScreenArgs? args;
 
   @override
   State<SendScreen> createState() => _SendScreenState();
@@ -52,6 +58,12 @@ class _SendScreenState extends State<SendScreen> {
     scheduleMicrotask(_load);
     _addressCtrl.addListener(_validateAddressLive);
     _amountCtrl.addListener(_validateAmountLive);
+    // Prefill if coming from QR scanner
+    final pre = widget.args?.recipient;
+    if (pre != null && pre.isNotEmpty) {
+      _addressCtrl.text = pre;
+      scheduleMicrotask(_validateAddressLive);
+    }
   }
 
   @override

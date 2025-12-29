@@ -48,7 +48,10 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.send,
         name: 'send',
-        pageBuilder: (context, state) => const NoTransitionPage(child: SendScreen()),
+        pageBuilder: (context, state) {
+          final args = state.extra is SendScreenArgs ? state.extra as SendScreenArgs : null;
+          return NoTransitionPage(child: SendScreen(args: args));
+        },
       ),
       GoRoute(
         path: AppRoutes.txResult,

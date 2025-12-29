@@ -47,5 +47,7 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Biometrijska autentikacija koristi Face ID za zaštitu walleta.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Kamera je potrebna za skeniranje QR kodova za plaćanje i adrese.</string>
 </dict>
 </plist>
